@@ -1,0 +1,28 @@
+version: '3'
+services:
+  dd:
+    image: "datadog/agent:6"
+    environment:
+      DD_API_KEY: ${DD_API_KEY}
+      DD_APM_ENABLED: "true"
+      DD_LOGS_ENABLED: "true"
+      DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL: "true"
+      DD_AC_EXCLUDE: "image:dd"
+      DD_PROCESS_AGENT_ENABLED: "true"
+      DD_APM_NON_LOCAL_TRAFFIC: "true"
+      DD_DOGSTATSD_NON_LOCAL_TRAFFIC: "true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc/:/host/proc/:ro
+      - /etc/passwd:/etc/passwd:ro
+      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
+  nginx:
+    build: 
+      context: ./nginx_static
+    ports: 
+      - "8080:80"
+    environment:
+      DD_AGENT_HOST: "ddog"
+      DD_TRACE_AGENT_PORT: "8126"
+    labels:
+      com.datadoghq.ad.logs: '[{"source": "nginx", "service": "nginx"}]'
